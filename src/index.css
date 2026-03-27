@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+/* ── Flexoki Light — complete palette as Tailwind v4 theme tokens ──────── */
+
+@theme {
+  /* Font */
+  --font-sans: "Shantell Sans", system-ui, -apple-system, sans-serif;
+
+  --text-xs--line-height: 1.5;
+  --text-sm--line-height: 1.5;
+  --text-base--line-height: 1.375;
+  --text-lg--line-height: 1.25;
+  --text-xl--line-height: 1.125;
+  --text-2xl--line-height: 1;
+
+  /* Base ramp */
+  --color-fx-black: #100F0F;
+  --color-fx-950: #1C1B1A;
+  --color-fx-900: #282726;
+  --color-fx-850: #343331;
+  --color-fx-800: #403E3C;
+  --color-fx-700: #575653;
+  --color-fx-600: #6F6E69;
+  --color-fx-500: #878580;
+  --color-fx-400: #B7B5AC;
+  --color-fx-300: #CECDC3;
+  --color-fx-200: #DAD8CE;
+  --color-fx-150: #E6E4D9;
+  --color-fx-100: #F2F0E5;
+  --color-fx-50: #FFFCF0;
+  --color-fx-paper: #FFFCF0;
+
+  /* Accent 600 (primary emphasis in light UI) */
+  --color-fx-red: #AF3029;
+  --color-fx-orange: #BC5215;
+  --color-fx-yellow: #AD8301;
+  --color-fx-green: #66800B;
+  --color-fx-cyan: #24837B;
+  --color-fx-blue: #205EA6;
+  --color-fx-purple: #5E409D;
+  --color-fx-magenta: #A02F6F;
+
+  /* Accent 400 (muted / secondary) */
+  --color-fx-red-muted: #D14D41;
+  --color-fx-orange-muted: #DA702C;
+  --color-fx-yellow-muted: #D0A215;
+  --color-fx-green-muted: #879A39;
+  --color-fx-cyan-muted: #3AA99F;
+  --color-fx-blue-muted: #4385BE;
+  --color-fx-purple-muted: #8B7EC8;
+  --color-fx-magenta-muted: #CE5D97;
+}
+
+/* ── Semantic aliases (CSS custom properties for non-utility use) ───────── */
+
+:root {
+  --color-bg: var(--color-fx-paper);
+  --color-surface: var(--color-fx-50);
+  --color-surface-raised: #FFFFFF;
+  --color-border: var(--color-fx-300);
+  --color-text: var(--color-fx-black);
+  --color-text-secondary: var(--color-fx-600);
+  --color-text-muted: var(--color-fx-500);
+}
+
+*,
+*::before,
+*::after {
+  border-color: var(--color-border);
+}
+
+html { font-size: 20px; }
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration-style: wavy;
+  text-decoration-thickness: 2px;
+}
+
+/* ── Sketchy borders via filtered pseudo-elements (text stays crisp) ────
+ *
+ *  Tuning guide (edit these to taste):
+ *    index.html  → <filter id="sketchy">
+ *      baseFrequency : waviness   (lower = broad waves, higher = jittery)
+ *      scale         : intensity  (higher = more variable-width)
+ *    Below CSS:
+ *      border width  : stroke weight (1px subtle, 2px default, 3px bold)
+ *      --color-border: stroke color
+ *
+ *  On-demand usage:
+ *    <div className="sketch-border">…</div>
+ * ─────────────────────────────────────────────────────────────────────── */
+
+/* Opt-in utility — add `sketch-border` to any element */
+.sketch-border {
+  position: relative;
+  border-color: transparent !important;
+}
+
+.sketch-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px solid var(--color-border);
+  border-radius: inherit;
+  filter: url(#sketchy);
+  pointer-events: none;
+}
+
+/* Cards and bordered containers — auto-applied */
+[class*="rounded-lg"][class*="border"] {
+  position: relative;
+  border-color: transparent !important;
+}
+
+[class*="rounded-lg"][class*="border"]::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px solid var(--color-border);
+  border-radius: inherit;
+  filter: url(#sketchy);
+  pointer-events: none;
+}
+
+[class*="rounded-lg"][class*="border-dashed"]::before {
+  border-style: dashed;
+}
+
+/* Sidebar — right edge only */
+aside {
+  position: relative;
+  border-right-color: transparent !important;
+}
+
+aside::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 0;
+  border-right: 2px solid var(--color-border);
+  filter: url(#sketchy);
+  pointer-events: none;
+}

@@ -1,0 +1,21 @@
+---
+description: "Dummy data, mocks, and stub API layers for presentation prototypes"
+globs: "**/*.{ts,tsx,js,jsx,mjs,cjs}"
+alwaysApply: false
+---
+
+## Data
+
+- Keep **seed data** in dedicated files (e.g. `data/`, `fixtures/`, `mocks/`) with stable IDs so screens can reference the same entities across routes.
+- Export small **factory helpers** only when they reduce repetition.
+- Avoid a heavy “fake ORM” unless the demo needs many variants.
+- Make data easy for them to understand and edit where needed.
+
+## APIs
+
+- Prefer **inline mocks** (functions that return `Promise.resolve(...)`) or a minimal dev-only handler layer over wiring a real server unless requested.
+- Name stub modules clearly: `*mock*`, `*stub*`, `*fixture*` so production-bound code is not confused with throwaway prototype code.
+
+## Errors and edge cases
+
+For demos, optional **toggleable** error states (query param, dev flag, or button) beat implementing every real failure mode.
