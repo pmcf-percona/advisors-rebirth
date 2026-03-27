@@ -133,6 +133,11 @@ a {
   border-style: dashed;
 }
 
+/* Feed check list rows — darker sketch stroke on hover (default stroke uses --color-border / fx-300) */
+li.advisors-check-card[class*='rounded-lg'][class*='border']:hover::before {
+  border-color: var(--color-fx-400);
+}
+
 /* Sidebar — right edge only */
 aside {
   position: relative;
@@ -164,6 +169,23 @@ aside::after {
   bottom: 0;
   height: 0;
   border-bottom: 2px solid var(--color-border);
+  filter: url(#sketchy);
+  pointer-events: none;
+}
+
+/* Single top edge — e.g. drawer footers */
+.sketch-border-top {
+  position: relative;
+}
+
+.sketch-border-top::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 0;
+  border-top: 2px solid var(--color-border);
   filter: url(#sketchy);
   pointer-events: none;
 }

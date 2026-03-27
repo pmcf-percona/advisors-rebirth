@@ -61,8 +61,9 @@ This app’s **hand-drawn / sketch stroke** is not plain `border` pixels. It com
 1. **Cards, panels, list rows, bordered blocks** — use Tailwind classes that include both **`rounded-lg`** and **`border`** (e.g. `rounded-lg border`, often with `border-fx-200` / `bg-white` / padding as existing screens do). A selector in `index.css` automatically applies the sketch outline to those elements; the real border is drawn on `::before` with the sketch filter.
 2. **Dashed placeholders** (empty states, drop zones) — same as (1) but add **`border-dashed`** (e.g. `rounded-lg border border-dashed border-fx-300 bg-fx-100/50`). The stylesheet switches the pseudo border to dashed.
 3. **Single bottom edge** (e.g. tab bars under the Advisors sub-nav) — add class **`sketch-border-bottom`** on the wrapper; do not duplicate custom `::after` sketch rules in components.
-4. **Non-`rounded-lg` bordered boxes** — add **`sketch-border`** so the opt-in utility applies the same filtered outline.
-5. **`aside` (app sidebar)** — the right edge sketch is **global** in `index.css`; do not strip `aside` or fight `border-right-color: transparent` unless you are deliberately changing shell layout.
+4. **Single top edge** (e.g. sticky drawer footers) — add class **`sketch-border-top`** on the wrapper (`::before` + same `#sketchy` filter as other sketch utilities).
+5. **Non-`rounded-lg` bordered boxes** — add **`sketch-border`** so the opt-in utility applies the same filtered outline.
+6. **`aside` (app sidebar)** — the right edge sketch is **global** in `index.css`; do not strip `aside` or fight `border-right-color: transparent` unless you are deliberately changing shell layout.
 
 **Do not**
 

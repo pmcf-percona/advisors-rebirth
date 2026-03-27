@@ -518,7 +518,7 @@ function CheckCard({ check, onSelect }: { check: CheckResult; onSelect: (c: Chec
 
   return (
     <li
-      className="rounded-lg border p-4 cursor-pointer transition-colors hover:border-fx-400 hover:bg-fx-50/60"
+      className="advisors-check-card rounded-lg border bg-fx-50 p-4 cursor-pointer transition-colors duration-150 hover:bg-fx-100"
       onClick={() => onSelect(check)}
     >
       <span className="block text-xs text-fx-500">{check.target}</span>
@@ -550,6 +550,165 @@ const metaLabels: Record<string, string> = {
   agent_id: 'Agent ID',
 };
 
+function relatedDashboardLabel(check: CheckResult): string {
+  const cat = check.category.toLowerCase();
+  const host = check.target.split('.')[0];
+  if (cat.includes('performance')) {
+    return `Query & CPU metrics for ${host}`;
+  }
+  if (cat.includes('schema')) {
+    return `Slow-query log for ${host}`;
+  }
+  if (cat.includes('maintenance')) {
+    return `Vacuum & Bloat metrics for ${host}`;
+  }
+  if (cat.includes('connect')) {
+    return `Connection pool metrics for ${host}`;
+  }
+  return `View metrics for ${host}`;
+}
+
+function buildAlertMarkdown(check: CheckResult): string {
+  const sev = severityConfig[check.severity].label;
+  return [
+    `## ${check.name}`,
+    '',
+    `- **Severity:** ${sev}`,
+    `- **Target:** \`${check.target}\``,
+    `- **Service:** ${check.meta.service_name}`,
+    `- **Advisor:** ${check.advisor}`,
+    `- **Category:** ${check.category}`,
+    '',
+    '### Details',
+    '',
+    check.description,
+    '',
+    '---',
+    '',
+    '_Exported from PMM Advisors (prototype wireframe)._',
+  ].join('\n');
+}
+
+const drawerFooterBtnClass =
+  'inline-flex flex-[1_1_auto] min-h-[44px] min-w-[min(100%,10.5rem)] max-w-full items-center justify-center gap-2 whitespace-normal rounded-md px-3 py-2 text-center text-sm font-medium leading-snug transition-colors';
+const drawerFooterBtnSecondary = `${drawerFooterBtnClass} bg-fx-100 text-fx-black hover:bg-fx-150`;
+const drawerFooterBtnGhost = `${drawerFooterBtnClass} border border-fx-200 bg-fx-paper text-fx-700 hover:bg-fx-100`;
+
+function AiNotConfiguredModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  if (!open) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[210] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="ai-setup-modal-title"
+    >
+      <button
+        type="button"
+        className="absolute inset-0 bg-fx-black/40"
+        aria-label="Close dialog"
+        onClick={onClose}
+      />
+      <div
+        className="relative z-10 w-full max-w-md rounded-lg border border-fx-200 bg-fx-paper p-6 shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 id="ai-setup-modal-title" className="text-base font-semibold text-fx-black">
+          Advanced explanation isn’t available yet
+        </h3>
+        <p className="mt-2 text-sm text-fx-600 leading-relaxed">
+          Bring-your-own-key AI isn’t configured for this organization. Set up an OpenAI-compatible endpoint in
+          Advisors settings to get grounded explanations using this alert’s context.
+        </p>
+        <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md border border-fx-300 bg-fx-50 px-4 py-2 text-sm font-medium text-fx-black hover:bg-fx-100"
+          >
+            Close
+          </button>
+          <Link
+            to="/advisors/settings"
+            onClick={onClose}
+            className="inline-flex items-center justify-center rounded-md bg-fx-blue px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+          >
+            Open Advisors settings
+          </Link>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
+function CheckDrawerFooter({ check }: { check: CheckResult }) {
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    setCopied(false);
+    setAiModalOpen(false);
+  }, [check.id]);
+
+  async function copyMarkdown() {
+    const text = buildAlertMarkdown(check);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      window.prompt('Copy this text:', text);
+    }
+  }
+
+  return (
+    <>
+      <footer className="shrink-0 sketch-border-top bg-fx-50 px-4 py-4">
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className={drawerFooterBtnSecondary}
+            onClick={() =>
+              window.alert(
+                `wireframe: would open documentation for “${check.category}” advisors.`,
+              )
+            }
+          >
+            Related docs
+          </button>
+          <button type="button" className={drawerFooterBtnSecondary} onClick={() => window.alert('wireframe: opens PMM dashboard for this target.')}>
+            {relatedDashboardLabel(check)}
+          </button>
+          <button
+            type="button"
+            className={drawerFooterBtnSecondary}
+            onClick={copyMarkdown}
+          >
+            {copied ? 'Copied' : 'Copy to clipboard as text'}
+          </button>
+          <button type="button" className={drawerFooterBtnSecondary} onClick={() => setAiModalOpen(true)}>
+            Explain with AI
+          </button>
+          <button
+            type="button"
+            className={drawerFooterBtnSecondary}
+            onClick={() =>
+              window.alert(
+                'wireframe: would open Manage checks with this check focused so you can silence it, change intervals, or adjust other options in context.',
+              )
+            }
+          >
+            Manage this check
+          </button>
+        </div>
+      </footer>
+      <AiNotConfiguredModal open={aiModalOpen} onClose={() => setAiModalOpen(false)} />
+    </>
+  );
+}
+
 function CheckDrawer({ check, onClose }: { check: CheckResult | null; onClose: () => void }) {
   const isOpen = check !== null;
 
@@ -570,7 +729,7 @@ function CheckDrawer({ check, onClose }: { check: CheckResult | null; onClose: (
         role="dialog"
         aria-modal={isOpen}
         aria-hidden={!isOpen}
-        className={`absolute top-0 right-0 bottom-0 z-10 flex w-full max-w-lg flex-col overflow-y-auto bg-fx-50/100 transition-transform duration-200 ease-in-out ${
+        className={`absolute top-0 right-0 bottom-0 z-10 flex h-full w-full max-w-lg flex-col overflow-hidden bg-fx-50/100 transition-transform duration-200 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -592,43 +751,47 @@ function CheckDrawerContent({ check, onClose }: { check: CheckResult; onClose: (
   });
 
   return (
-    <div>
-      <div className="flex items-start gap-0 px-4 py-6">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${sev.badge}`}>
-              {sev.label}
-            </span>
-            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-fx-200/50 text-fx-700">
-              {dbLabel}
-            </span>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div className="flex items-start gap-0 px-4 py-6">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${sev.badge}`}>
+                {sev.label}
+              </span>
+              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-fx-200/50 text-fx-700">
+                {dbLabel}
+              </span>
+            </div>
+            <h2 className="mt-2 text-lg font-semibold text-fx-black leading-snug">{check.name}</h2>
+            <p className="mt-1 text-sm text-fx-700 leading-relaxed">{check.description}</p>
           </div>
-          <h2 className="mt-2 text-lg font-semibold text-fx-black leading-snug">{check.name}</h2>
-          <p className="mt-1 text-sm text-fx-700 leading-relaxed">{check.description}</p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="shrink-0 rounded-sm p-1 text-fx-400 transition-colors hover:bg-fx-200/33 hover:text-fx-black"
+          >
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round">
+              <path d="M4 4l8 8M12 4l-8 8" />
+            </svg>
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="shrink-0 rounded-sm p-1 text-fx-400 transition-colors hover:bg-fx-200/33 hover:text-fx-black"
-        >
-          <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round">
-            <path d="M4 4l8 8M12 4l-8 8" />
-          </svg>
-        </button>
+
+        <div className="px-4 pb-4">
+          <h3 className="text-ms font-semibold">Metadata</h3>
+          <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-3">
+            <MetaRow label="Target" value={check.target} />
+            <MetaRow label="Category" value={check.category} />
+            <MetaRow label="Advisor" value={check.advisor} />
+            <MetaRow label="Last Run" value={time} />
+            {Object.entries(check.meta).map(([key, value]) => (
+              <MetaRow key={key} label={metaLabels[key] ?? key} value={value} />
+            ))}
+          </dl>
+        </div>
       </div>
 
-      <div className="px-4 py-4">
-        <h3 className="text-ms font-semibold">Metadata</h3>
-        <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-3">
-          <MetaRow label="Target" value={check.target} />
-          <MetaRow label="Category" value={check.category} />
-          <MetaRow label="Advisor" value={check.advisor} />
-          <MetaRow label="Last Run" value={time} />
-          {Object.entries(check.meta).map(([key, value]) => (
-            <MetaRow key={key} label={metaLabels[key] ?? key} value={value} />
-          ))}
-        </dl>
-      </div>
+      <CheckDrawerFooter check={check} />
     </div>
   );
 }
