@@ -143,10 +143,27 @@ aside::after {
   content: '';
   position: absolute;
   top: 0;
-  right: 0;
+  right: 2px;
   bottom: 0;
   width: 0;
   border-right: 2px solid var(--color-border);
+  filter: url(#sketchy);
+  pointer-events: none;
+}
+
+/* Advisors tab bar — bottom edge only */
+.sketch-border-bottom {
+  position: relative;
+}
+
+.sketch-border-bottom::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
+  border-bottom: 2px solid var(--color-border);
   filter: url(#sketchy);
   pointer-events: none;
 }

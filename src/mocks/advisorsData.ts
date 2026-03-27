@@ -177,19 +177,18 @@ export const availableChecks: AvailableCheck[] = [
   },
 ];
 
-// ── Scenario toggle helper ────────────────────────────────────────────────
-// Use `?scenario=empty` in the URL to simulate "no checks configured".
-// Default shows the mixed state above.
+export interface FleetSummary {
+  totalActive: number;
+  passing: number;
+  actionable: number;
+}
 
-export type Scenario = 'default' | 'empty' | 'all-critical';
+export function getFleetSummary(): FleetSummary {
+  const actionable = failedChecks.length;
+  const totalActive = 47;
+  return { totalActive, passing: totalActive - actionable, actionable };
+}
 
-export function getScenarioChecks(scenario?: Scenario): CheckResult[] {
-  switch (scenario) {
-    case 'empty':
-      return [];
-    case 'all-critical':
-      return failedChecks.map((c) => ({ ...c, severity: 'critical' as const }));
-    default:
-      return failedChecks;
-  }
+export function getScenarioChecks(): CheckResult[] {
+  return failedChecks;
 }

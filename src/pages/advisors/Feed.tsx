@@ -1,9 +1,9 @@
-import { useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   getScenarioChecks,
+  getFleetSummary,
   type CheckResult,
   type CheckSeverity,
-  type Scenario,
 } from '../../mocks/advisorsData';
 
 const severityConfig: Record<CheckSeverity, { dot: string; badge: string; label: string }> = {
@@ -30,45 +30,63 @@ const dbIcons: Record<string, string> = {
   mysql: 'MY',
 };
 
+function FleetSummary() {
+  const { totalActive, passing, actionable } = getFleetSummary();
+
+  return (
+    <div className="rounded-lg border border-fx-200 px-4 py-3">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-fx-green/15 text-fx-green">
+            <svg width="16" height="16" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2.5 6.5 5 9l4.5-6" />
+            </svg>
+          </span>
+          <span className="text-2xl font-semibold text-fx-green">{passing}</span>
+          <span className="text-sm font-semibold text-fx-green/100">passed</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-fx-red/15 text-fx-red">
+            <svg width="16" height="16" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 1v5" />
+              <circle cx="6" cy="10" r="1.25" fill="currentColor" stroke="none" />
+            </svg>
+          </span>
+          <span className="text-2xl font-semibold text-fx-red">{actionable}</span>
+          <span className="text-sm font-semibold text-fx-red/100">actionable</span>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-x-10 gap-y-1 text-xs text-fx-500">
+        <div className="flex items-center gap-2">
+          <span>From a total of {totalActive} active checks</span>
+          <span>&middot;</span>
+          <Link to="/advisors/available" className="text-fx-blue">
+            Manage checks
+          </Link>
+        </div>
+        <div className="flex items-center gap-2">
+          <span>Last checked: 1 min. ago</span>
+          <span>&middot;</span>
+          <button type="button" className="text-fx-blue">
+            Refresh
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Feed() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const scenario = (searchParams.get('scenario') as Scenario) ?? undefined;
-  const checks = getScenarioChecks(scenario);
+  const checks = getScenarioChecks();
 
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-fx-black">Checks Feed</h1>
-          <p className="mt-1 text-sm text-fx-600">
-            {checks.length} failed check{checks.length !== 1 && 's'} across your monitored fleet.
-          </p>
-        </div>
+      <FleetSummary />
 
-        {/* wireframe: scenario toggle for demos */}
-        <div className="flex items-center gap-1.5 rounded-md border border-fx-200 bg-white px-1 py-0.5">
-          {(['default', 'empty', 'all-critical'] as const).map((s) => (
-            <button
-              key={s}
-              onClick={() => {
-                if (s === 'default') {
-                  searchParams.delete('scenario');
-                } else {
-                  searchParams.set('scenario', s);
-                }
-                setSearchParams(searchParams);
-              }}
-              className={`px-2.5 py-1 text-xs rounded transition-colors ${
-                (scenario ?? 'default') === s
-                  ? 'bg-fx-150 text-fx-black font-medium'
-                  : 'text-fx-500 hover:text-fx-black'
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
+      <h2 className="mt-6 text-lg font-semibold text-fx-black">
+        {checks.length} actionable check{checks.length !== 1 && 's'}
+      </h2>
 
       {checks.length === 0 ? (
         <div className="mt-12 flex flex-col items-center justify-center rounded-lg border border-dashed border-fx-300 bg-fx-100/50 py-16">
@@ -97,7 +115,7 @@ function CheckCard({ check }: { check: CheckResult }) {
   });
 
   return (
-    <li className="rounded-lg border border-fx-200 bg-white p-5 shadow-sm hover:shadow transition-shadow">
+    <li className="rounded-lg border p-4">
       <div className="flex items-start gap-4">
         <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${sev.dot}`} />
         <div className="min-w-0 flex-1">

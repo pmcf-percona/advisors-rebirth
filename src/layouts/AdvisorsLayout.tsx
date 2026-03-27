@@ -1,23 +1,23 @@
 import { NavLink, Outlet } from 'react-router-dom';
 
 const tabClass = ({ isActive }: { isActive: boolean }) =>
-  `px-4 py-2.5 text-sm border-b-2 transition-colors ${
+  `px-4 py-2.5 text-sm transition-colors ${
     isActive
-      ? 'border-fx-blue text-fx-blue font-medium'
-      : 'border-transparent text-fx-600 hover:text-fx-black hover:border-fx-300'
+      ? 'text-fx-blue font-medium underline decoration-fx-blue'
+      : 'text-fx-600 hover:text-fx-black no-underline'
   }`;
 
 export function AdvisorsLayout() {
   return (
     <div>
-      <div className="border-b border-fx-200 bg-fx-100/50">
-        <div className="mx-auto max-w-7xl px-6">
+      <div className="sketch-border-bottom bg-fx-50/100">
+        <div className="mx-auto max-w-7xl px-2">
           <nav className="flex gap-1 -mb-px">
             <NavLink to="/advisors/feed" className={tabClass}>
-              Checks Feed
+              Status feed
             </NavLink>
             <NavLink to="/advisors/available" className={tabClass}>
-              Available Checks
+              Manage checks
             </NavLink>
             <NavLink to="/advisors/settings" className={tabClass}>
               Settings
