@@ -1,0 +1,33 @@
+---
+description: "Product context for PMM Advisors → database reliability platform; shapes copy, flows, and scope of the wireframe."
+alwaysApply: true
+---
+
+## North star
+
+Evolve existing PMM Advisors feature from reactive dashboards and noisy alerts into a **proactive, agentic database reliability platform** — deterministic root-cause insight (not generic LLM guesswork), embedded in CI/CD, incidents, and day-to-day workflows.
+
+## Problem space
+
+Today’s PMM Advisors feel like static, high-friction alerting:
+- lots of **symptom** noise,
+- weak **root-cause** narrative,
+- heavy handoffs between DBAs, SREs, and developers (**coordination tax**, context switching).
+
+## Who we design for
+
+- **DBAs / data owners** — trust, data integrity, explainable diagnostics (no “black box” fluff).
+- **SREs** — outage-time clarity; **ChatOps**-friendly, low context-switch.
+- **Developers** — **shift-left**: catch bad/slow queries in **CI/CD** before prod.
+- **Managed services / power users** — **UI-driven studio** to author, test, and ship custom DB checks without heavy ops toil.
+
+## Value to express in the mockup (not build for real here)
+
+- **Deterministic diagnostics** surfaced in pipeline and incident workflows. It's "vision" word/design, not a real backend in this repo.
+- **Studio-style** experience: configure checks, see results, reduce operational overhead for custom observability.
+
+## What this repo is not
+
+- Not production-ready software — **wireframe / design-phase** mock only.
+- Not a full stack observability product.
+- Not a **generative-AI** app, or **chatbot** as the core UX.

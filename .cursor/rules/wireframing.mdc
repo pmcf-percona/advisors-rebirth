@@ -1,0 +1,29 @@
+---
+description: "Core intent: interactive wireframe and dummy prototype for design-phase features"
+alwaysApply: true
+---
+
+## Priorities
+
+- **Navigability and core user journeys** over completeness.
+- **Stubbed or local dummy data** (JSON, in-memory, or mocked handlers). No obligation to match a real backend schema until design locks.
+- **Clear labeling** where things are provisional: short comments (`// wireframe`), placeholder copy, or UI badges like “Prototype” when it helps stakeholders.
+
+## De-prioritize (unless the user asks)
+
+- Production auth, real APIs, full validation, accessibility audits to WCAG AAA, performance tuning, and hardening.
+- Pixel-perfect fidelity or final branding before **product** visual design is locked. In this case, prefer **clear hierarchy and spacing** (colors still follow Flexoki per `ui.mdc`) so the layout is critique-ready.
+
+## When adding behavior
+
+- Prefer the **simplest** state (local state, URL params, or a tiny context) that makes the flow clickable.
+- If a flow is undecided, implement a **stub screen** (“Not in scope for this prototype”) rather than guessing final product behavior.
+
+## Visual language (UI work)
+
+When implementing screens, components, or styles, follow **`.cursor/rules/ui.mdc`** for wireframe UI patterns and the **required [Flexoki](https://stephango.com/flexoki)** color system. This rule defines scope and priorities; `ui.mdc` defines how the prototype should look and behave in the frontend.
+
+## Data and copy
+
+- Use **obvious fake** names, dates, and numbers so testers know it is not real.
+- For file layout, mocks, and toggles, follow **`.cursor/rules/dummy-data.mdc`** when editing matching source files.

@@ -1,0 +1,60 @@
+---
+description: "Two PMM Advisors journey maps: (1) today’s in-product flow—context only; (2) target flow—the experience this wireframe should move toward."
+alwaysApply: true
+---
+
+## Baseline: today’s PMM Advisors (reference)
+
+**What this is:** A simplified map of the **existing** Advisors experience in PMM today—navigation, pages, and check drill-down **as users see them now**.
+
+**What this is not:** A specification for the wireframe’s end state.
+
+Treat it as **historical / product context** so you do not confuse “how it works today” with “what we are building toward” in the mock.
+
+```mermaid
+
+flowchart TB
+    AccessPMM("Load PMM app") -. Check Advisors panel ..-> HomeDashboard("Home dashboard page")
+    HomeDashboard -- From sidebar or Advisors panel, navigate to Advisors ---> AdvisorInsights("Advisor insights page")
+    HomeDashboard -- From sidebar or Advisors panel, see available checks in a specific collection ---> ChecksGroup("Checks collection page")
+    AdvisorInsights -- Open failed check --> CheckReport("Check report page")
+    ChecksGroup -- "Expand sub-collection" --> ChecksSubGroup("Checks sub-collection accordion component")
+    ChecksSubGroup -- Change check ---> CheckItem("Check item/component")
+    CheckItem -. Toggle ..-> ExecutionStateToggle("Execution state toggle component")
+    CheckItem -. Set ..-> ExecutionInterval("Execution interval definition")
+    CheckItem -. Push ..-> ManualExecutionButton("Manual execution button component")
+
+```
+
+## Target: improved PMM Advisors (wireframe should follow this)
+
+**What this is:** The **intended future** Advisors experience—shared nav, checks feed, available checks, settings richer check reporting, etc.
+
+This is the **role model** for evolving the interactive wireframe: **prefer this information architecture and journey shape** when you add or refactor flows in the repo.
+
+**What this is not:** A promise that every node exists in code yet. Stub or simplify where the mock is still thin; **direction** should match this diagram.
+
+```mermaid
+
+flowchart TB
+
+AccessPMM("Load PMM app") -. Check Advisors panel ..-> HomeDashboard("Home dashboard page")
+HomeDashboard -- From sidebar or home dashboard's new Advisors widget, navigate to Advisors ---> CommonUI("Advisors navigation bar component")
+CommonUI -- If checks are running, show this as the landing page ---> ChecksFeed("Checks feed page")
+CommonUI -- If there are no checks set up, then see all available checks to activate ---> AvailableChecks("Available checks page")
+CommonUI -- For all things operational setup for Advisors ---> GlobalSettings("Advisors settings page")
+ChecksFeed -- See a failed check ---> CheckReporting("Check reporting summary item/component")
+CheckReporting -- Request AI to explain, if set up, if not show onboarding to set it up ---> AdvancedExplanation("Advanced explanation AI")
+CheckReporting -- Silence check ---> ExecutionStateToggle("Execution state toggle")
+AvailableChecks -- Bulk manage checks ---> ChecksList("Checks list based on Material React Table component")
+GlobalSettings -- Set up AI ---> BYOKAISetup("BYOK AI set up form tab")
+GlobalSettings -- Create a new check ---> DevelopmentTools("Development of Advisors management tab")
+GlobalSettings -- Other relevant options ---> OptionTab("Option placeholder tab")
+CheckReporting -- Manage check item in Checks list page ---> CheckItem("Check item/row/panel component")
+ChecksList -- Manage check ---> CheckItem
+CheckItem -- Toggle ---> ExecutionStateToggle
+CheckItem -- Set ---> ExecutionInterval("Execution interval")
+CheckItem -- Push ---> ManualExecutionButton("Manual execution button")
+DevelopmentTools -.-> TBD("TBD")
+
+```

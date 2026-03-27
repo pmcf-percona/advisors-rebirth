@@ -1,0 +1,43 @@
+---
+description: "UI and routing patterns for clickable wireframes (React/Vue/Svelte/Astro-friendly)"
+globs: "**/*.{ts,tsx,js,jsx,vue,svelte,astro,html,css,scss}"
+alwaysApply: false
+---
+
+# Frontend wireframe conventions
+
+Treat every UI task in this project as **prototype-first implementation**: prioritize clarity, consistency, and clickable flows over production-grade architecture.  
+
+When generating screens, aim to **replicate the existing UI language** (layout rhythm, spacing, typography, component patterns, and navigation behavior) so new work feels like a natural extension of what is already present. If the codebase has little UI yet, establish a **minimal consistent shell** using this rule instead of inventing a new style per screen.
+
+Before coding, quickly infer and follow the current conventions for:
+
+- how routes/screens are organized,
+- how reusable components are composed,
+- how interactions are represented in demos (stubs, placeholders, simple state),
+- and how styling choices communicate hierarchy over polish.
+
+If something is ambiguous, prefer the **simplest believable wireframe behavior** and leave a short note indicating it is provisional for design feedback.
+
+## Structure
+
+- Organize by **user journey** (routes or top-level sections), not by maximal component abstraction.
+- One screen = one primary intent; avoid nesting many unrelated states in a single view unless the demo/mock of the user's journey requires it.
+
+## Components
+
+- Reuse a **small** set of layout primitives (page shell, section, stack) before extracting deep abstractions.
+- Duplication is acceptable if it keeps the prototype **easy to read and delete** when design changes.
+
+## Interactions
+
+- Every critical path should be **clickable** end-to-end, even if actions only show a toast, modal, or “success” stub.
+- Loading and empty states: use **simple placeholders** (skeleton blocks, one line of copy) so flows feel real in demos.
+
+## Styling
+
+- **All UI colors must use the [Flexoki](https://stephango.com/flexoki) palette**—semantic base tokens and accent ramps only. Do not introduce arbitrary hex/RGB/HSL values outside Flexoki (including “close enough” grays).
+- **Name tokens like Flexoki’s UI roles** so implementation stays aligned with the system.
+- **Light vs dark:** follow Flexoki’s documented mappings (e.g. light UI: accent **600** weights for emphasized accent UI; dark UI: accent **400** weights where Flexoki specifies). Prefer the **base/paper ramp** for wireframe chrome (warm paper-like backgrounds, ink-like text and grays) so the prototype stays high-contrast and legible without breaking out of the system.
+- **Wireframe discipline:** achieve a “mostly neutral” wireframe look by leaning on the Flexoki **base** ramp for surfaces and borders; use accents **sparingly** for links, focus rings, validation, and clear semantic states (success/error/warning).
+- Centralize color, typography and other styling choices so that it's easy to tweak the project globally.
