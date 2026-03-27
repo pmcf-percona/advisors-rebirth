@@ -31,7 +31,7 @@ const dbIcons: Record<string, string> = {
 };
 
 function FleetSummary() {
-  const { totalActive, passing, actionable } = getFleetSummary();
+  const { totalActive, passing, critical, warning } = getFleetSummary();
 
   return (
     <div className="rounded-lg border border-fx-200 px-4 py-3">
@@ -45,15 +45,26 @@ function FleetSummary() {
           <span className="text-2xl font-semibold text-fx-green">{passing}</span>
           <span className="text-sm font-semibold text-fx-green/100">passed</span>
         </div>
+
         <div className="flex items-center gap-2">
           <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-fx-red/15 text-fx-red">
-            <svg width="16" height="16" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 3l6 6M9 3l-6 6" />
+            </svg>
+          </span>
+          <span className="text-2xl font-semibold text-fx-red">{critical}</span>
+          <span className="text-sm font-semibold text-fx-red/100">critical</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-fx-orange/15 text-fx-orange">
+            <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 1v5" />
               <circle cx="6" cy="10" r="1.25" fill="currentColor" stroke="none" />
             </svg>
           </span>
-          <span className="text-2xl font-semibold text-fx-red">{actionable}</span>
-          <span className="text-sm font-semibold text-fx-red/100">actionable</span>
+          <span className="text-2xl font-semibold text-fx-orange">{warning}</span>
+          <span className="text-sm font-semibold text-fx-orange/100">warning</span>
         </div>
       </div>
 

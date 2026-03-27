@@ -180,13 +180,15 @@ export const availableChecks: AvailableCheck[] = [
 export interface FleetSummary {
   totalActive: number;
   passing: number;
-  actionable: number;
+  critical: number;
+  warning: number;
 }
 
 export function getFleetSummary(): FleetSummary {
-  const actionable = failedChecks.length;
+  const critical = failedChecks.filter((c) => c.severity === 'critical').length;
+  const warning = failedChecks.filter((c) => c.severity === 'warning').length;
   const totalActive = 47;
-  return { totalActive, passing: totalActive - actionable, actionable };
+  return { totalActive, passing: totalActive - critical - warning, critical, warning };
 }
 
 export function getScenarioChecks(): CheckResult[] {
