@@ -41,3 +41,33 @@ If something is ambiguous, prefer the **simplest believable wireframe behavior**
 - **Light vs dark:** follow Flexoki’s documented mappings (e.g. light UI: accent **600** weights for emphasized accent UI; dark UI: accent **400** weights where Flexoki specifies). Prefer the **base/paper ramp** for wireframe chrome (warm paper-like backgrounds, ink-like text and grays) so the prototype stays high-contrast and legible without breaking out of the system.
 - **Wireframe discipline:** achieve a “mostly neutral” wireframe look by leaning on the Flexoki **base** ramp for surfaces and borders; use accents **sparingly** for links, focus rings, validation, and clear semantic states (success/error/warning).
 - Centralize color, typography and other styling choices so that it's easy to tweak the project globally.
+
+## Sketch borders (required wireframe chrome)
+
+This app’s **hand-drawn / sketch stroke** is not plain `border` pixels. It comes from a global SVG **displacement filter** plus CSS that redraws borders on pseudo-elements so **text stays sharp**. When you add new panels, cards, empty states, or nav chrome, **match this system** instead of inventing flat outlines or new filter tricks.
+
+**Source of truth**
+
+- Filter definition: `index.html` → `<filter id="sketchy">` (`feTurbulence` + `feDisplacementMap`). Do not remove or rename the id; new sketch styling must keep using `filter: url(#sketchy)`.
+- Implementation and tuning notes: `src/index.css` (comment block above `.sketch-border`).
+
+**Stroke appearance**
+
+- Default stroke color is **`var(--color-border)`** (maps to Flexoki via `--color-fx-300` in `:root`). The sketch layer uses that token, not arbitrary colors.
+- Default stroke weight in CSS is **2px** on the pseudo-element borders.
+
+**Patterns to reuse when building new UI**
+
+1. **Cards, panels, list rows, bordered blocks** — use Tailwind classes that include both **`rounded-lg`** and **`border`** (e.g. `rounded-lg border`, often with `border-fx-200` / `bg-white` / padding as existing screens do). A selector in `index.css` automatically applies the sketch outline to those elements; the real border is drawn on `::before` with the sketch filter.
+2. **Dashed placeholders** (empty states, drop zones) — same as (1) but add **`border-dashed`** (e.g. `rounded-lg border border-dashed border-fx-300 bg-fx-100/50`). The stylesheet switches the pseudo border to dashed.
+3. **Single bottom edge** (e.g. tab bars under the Advisors sub-nav) — add class **`sketch-border-bottom`** on the wrapper; do not duplicate custom `::after` sketch rules in components.
+4. **Non-`rounded-lg` bordered boxes** — add **`sketch-border`** so the opt-in utility applies the same filtered outline.
+5. **`aside` (app sidebar)** — the right edge sketch is **global** in `index.css`; do not strip `aside` or fight `border-right-color: transparent` unless you are deliberately changing shell layout.
+
+**Do not**
+
+- Replace sketch chrome with default sharp `border` on new primary surfaces without updating the central CSS (would split the visual language).
+- Add duplicate SVG filters or copy-paste `feTurbulence` blocks into components—extend `index.html` / `index.css` if tuning is needed.
+- Rely on thick box-shadows or arbitrary outlines to stand in for sketch borders on new feature boxes.
+
+**If you change the look globally**, adjust `baseFrequency` / `scale` in `index.html` and border width / `--color-border` in `src/index.css` per the comments there, not per-component hacks.
