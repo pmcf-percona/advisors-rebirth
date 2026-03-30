@@ -110,7 +110,7 @@ function RecentNotificationRow({ check }: { check: CheckResult }) {
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-fx-black group-hover:text-fx-blue truncate">{check.name}</p>
           <p className="mt-0 text-xs text-fx-500 truncate">
-            <span className="font-mono text-fx-600">{check.target}</span>
+            <span className="text-fx-600">{check.target}</span>
             <span className="mx-1.5 text-fx-300">&middot;</span>
             <span>{shortRunTime(check.lastRun)}</span>
           </p>
