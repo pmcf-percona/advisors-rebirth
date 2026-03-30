@@ -189,3 +189,9 @@ aside::after {
   filter: url(#sketchy);
   pointer-events: none;
 }
+
+/* Custom overrides stuff */
+
+.pf-inset-1::before {
+  inset: 1px !important;
+}

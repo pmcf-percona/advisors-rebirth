@@ -25,7 +25,12 @@ export interface CheckResult {
   lastRun: string;
   advisor: string;
   meta: CheckMeta;
+  /** wireframe: `AvailableCheck.id` to open in Manage checks editor from feed “Manage this check” */
+  catalogCheckId: string;
 }
+
+/** wireframe: whether the editor treats payload as YAML check definition vs PromQL */
+export type CheckConfigurationKind = 'yaml' | 'promql';
 
 export interface AvailableCheck {
   id: string;
@@ -36,6 +41,11 @@ export interface AvailableCheck {
   enabled: boolean;
   interval: string;
   advisor: string;
+  /** wireframe: editable check definition (YAML or PromQL) */
+  configuration: string;
+  configurationKind: CheckConfigurationKind;
+  /** wireframe: factory default for “Revert to default” in editor */
+  defaultConfiguration: string;
 }
 
 // ── Failed checks (default "mixed" scenario) ─────────────────────────────
@@ -53,6 +63,7 @@ export const failedChecks: CheckResult[] = [
     category: 'Performance',
     lastRun: '2026-03-26T09:14:00Z',
     advisor: 'Performance Advisor',
+    catalogCheckId: 'avchk-001',
     meta: {
       environment: 'production',
       cluster: 'us-east-pg-primary',
@@ -75,6 +86,7 @@ export const failedChecks: CheckResult[] = [
     category: 'Schema',
     lastRun: '2026-03-26T08:45:00Z',
     advisor: 'Schema Advisor',
+    catalogCheckId: 'avchk-002',
     meta: {
       environment: 'staging',
       cluster: 'eu-west-mongo-rs1',
@@ -97,6 +109,7 @@ export const failedChecks: CheckResult[] = [
     category: 'Maintenance',
     lastRun: '2026-03-26T07:30:00Z',
     advisor: 'Maintenance Advisor',
+    catalogCheckId: 'avchk-003',
     meta: {
       environment: 'development',
       cluster: 'us-west-pg-dev',
@@ -119,6 +132,7 @@ export const failedChecks: CheckResult[] = [
     category: 'Connectivity',
     lastRun: '2026-03-26T09:02:00Z',
     advisor: 'Connectivity Advisor',
+    catalogCheckId: 'avchk-004',
     meta: {
       environment: 'production',
       cluster: 'ap-south-mysql-ha',
@@ -141,6 +155,8 @@ export const failedChecks: CheckResult[] = [
     category: 'Performance',
     lastRun: '2026-03-26T08:58:00Z',
     advisor: 'Performance Advisor',
+    /** wireframe: no exact catalog twin; opens CPU check as same advisor/category bucket */
+    catalogCheckId: 'avchk-001',
     meta: {
       environment: 'staging',
       cluster: 'us-east-pg-staging',
@@ -155,6 +171,91 @@ export const failedChecks: CheckResult[] = [
 
 // ── Available checks catalogue ────────────────────────────────────────────
 
+const cfg001 = `# wireframe — CPU utilization (YAML)
+check:
+  id: cpu_utilization_sustained
+  title: CPU Utilization Exceeds Threshold
+threshold:
+  metric: host_cpu_percent
+  operator: gt
+  value: 85
+window:
+  duration_seconds: 300
+  min_samples: 12
+targets:
+  include_tags: [env:production, role:primary]
+notifications:
+  severity: warning
+`;
+
+const cfg002 = `# wireframe — index hints (YAML)
+check:
+  id: mongo_collscan_ratio
+  title: Missing Index Detection
+query:
+  source: advisor_slow_queries
+  condition:
+    docs_examined_to_returned_ratio: gt 1000
+schedule:
+  align_to: wall_clock
+window_minutes: 15
+`;
+
+const cfg003 = `# wireframe — autovacuum (YAML)
+check:
+  id: pg_autovacuum_lag
+  title: Autovacuum Health
+rules:
+  - table_bloat_estimate_mb: gt 512
+  - last_autovacuum_age_hours: gt 24
+scope:
+  schemas: [public, analytics]
+ignore_tables: [staging_tmp_*]
+`;
+
+const cfg004 = `(
+  mysql_global_status_threads_connected
+  /
+  mysql_global_variables_max_connections
+) > 0.85`;
+
+const cfg005 = `# wireframe — replication (YAML)
+check:
+  id: pg_replica_lag_bytes
+  title: Replication Lag
+threshold:
+  lag_bytes: gt 33554432
+  lag_seconds: gt 120
+replicas:
+  match_label: replica_of=primary-prod-01
+`;
+
+const cfg006 = `predict_linear(
+  mysql_global_status_bytes_received[1h],
+  7 * 24 * 3600
+) + mysql_global_status_bytes_sent offset 1w > mysql_slave_status_slave_sql_running`;
+
+const cfg007 = `# wireframe — slow ops (YAML)
+check:
+  id: mongo_slow_operation_ms
+  title: Slow Query Detection
+threshold_ms: 500
+aggregation:
+  op_types: [find, aggregate, getmore]
+exclude_ns: [config.*, local.*]
+`;
+
+const cfg008 = `# wireframe — binlog retention (YAML)
+check:
+  id: mysql_binlog_retention_hours
+  title: Binary Log Retention
+expect:
+  min_retention_hours: 24
+  max_disk_usage_percent: 15
+paths:
+  - /var/lib/mysql/binlog
+`;
+
 export const availableChecks: AvailableCheck[] = [
   {
     id: 'avchk-001',
@@ -165,6 +266,9 @@ export const availableChecks: AvailableCheck[] = [
     enabled: true,
     interval: '60s',
     advisor: 'Performance Advisor',
+    configurationKind: 'yaml',
+    configuration: cfg001,
+    defaultConfiguration: cfg001,
   },
   {
     id: 'avchk-002',
@@ -175,6 +279,9 @@ export const availableChecks: AvailableCheck[] = [
     enabled: true,
     interval: '300s',
     advisor: 'Schema Advisor',
+    configurationKind: 'yaml',
+    configuration: cfg002,
+    defaultConfiguration: cfg002,
   },
   {
     id: 'avchk-003',
@@ -185,6 +292,9 @@ export const availableChecks: AvailableCheck[] = [
     enabled: true,
     interval: '3600s',
     advisor: 'Maintenance Advisor',
+    configurationKind: 'yaml',
+    configuration: cfg003,
+    defaultConfiguration: cfg003,
   },
   {
     id: 'avchk-004',
@@ -195,6 +305,9 @@ export const availableChecks: AvailableCheck[] = [
     enabled: true,
     interval: '30s',
     advisor: 'Connectivity Advisor',
+    configurationKind: 'promql',
+    configuration: cfg004,
+    defaultConfiguration: cfg004,
   },
   {
     id: 'avchk-005',
@@ -205,6 +318,9 @@ export const availableChecks: AvailableCheck[] = [
     enabled: false,
     interval: '60s',
     advisor: 'Replication Advisor',
+    configurationKind: 'yaml',
+    configuration: cfg005,
+    defaultConfiguration: cfg005,
   },
   {
     id: 'avchk-006',
@@ -215,6 +331,9 @@ export const availableChecks: AvailableCheck[] = [
     enabled: false,
     interval: '3600s',
     advisor: 'Resource Advisor',
+    configurationKind: 'promql',
+    configuration: cfg006,
+    defaultConfiguration: cfg006,
   },
   {
     id: 'avchk-007',
@@ -225,6 +344,9 @@ export const availableChecks: AvailableCheck[] = [
     enabled: false,
     interval: '120s',
     advisor: 'Performance Advisor',
+    configurationKind: 'yaml',
+    configuration: cfg007,
+    defaultConfiguration: cfg007,
   },
   {
     id: 'avchk-008',
@@ -235,6 +357,9 @@ export const availableChecks: AvailableCheck[] = [
     enabled: false,
     interval: '86400s',
     advisor: 'Maintenance Advisor',
+    configurationKind: 'yaml',
+    configuration: cfg008,
+    defaultConfiguration: cfg008,
   },
 ];
 

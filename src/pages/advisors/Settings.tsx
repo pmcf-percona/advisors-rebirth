@@ -38,7 +38,7 @@ export function Settings() {
 
 function BYOKPanel() {
   return (
-    <div className="max-w-lg rounded-lg border border-fx-200 bg-white p-6 shadow-sm">
+    <div className="max-w-lg rounded-lg border border-fx-200 bg-fx-50 p-6 shadow-sm">
       <h2 className="text-sm font-semibold text-fx-black">Bring Your Own Key — AI Provider</h2>
       <p className="mt-1 text-xs text-fx-500">
         Connect an OpenAI-compatible API to enable Advanced Explanation on check results.
@@ -49,7 +49,7 @@ function BYOKPanel() {
           <input
             type="url"
             placeholder="https://api.openai.com/v1"
-            className="mt-1 block w-full rounded-md border border-fx-200 bg-fx-paper px-3 py-2 text-sm text-fx-black placeholder:text-fx-400 focus:border-fx-blue focus:ring-1 focus:ring-fx-blue/30 outline-none"
+            className="mt-1 block w-full rounded-md bg-fx-100 px-3 py-2 text-sm text-fx-black placeholder:text-fx-400 focus:border-fx-blue focus:ring-1 focus:ring-fx-blue/30 outline-none"
           />
         </label>
         <label className="block">
@@ -57,7 +57,7 @@ function BYOKPanel() {
           <input
             type="password"
             placeholder="sk-••••••••••••••••"
-            className="mt-1 block w-full rounded-md border border-fx-200 bg-fx-paper px-3 py-2 text-sm text-fx-black placeholder:text-fx-400 focus:border-fx-blue focus:ring-1 focus:ring-fx-blue/30 outline-none"
+            className="mt-1 block w-full rounded-md bg-fx-100 px-3 py-2 text-sm text-fx-black placeholder:text-fx-400 focus:border-fx-blue focus:ring-1 focus:ring-fx-blue/30 outline-none"
           />
         </label>
         <button

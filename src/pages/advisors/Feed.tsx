@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   getScenarioChecks,
   getFleetSummary,
@@ -590,7 +590,7 @@ function buildAlertMarkdown(check: CheckResult): string {
 }
 
 const drawerFooterBtnClass =
-  'inline-flex flex-[1_1_auto] min-h-[44px] min-w-[min(100%,10.5rem)] max-w-full items-center justify-center gap-2 whitespace-normal rounded-md px-3 py-2 text-center text-sm font-medium leading-snug transition-colors';
+  'inline-flex cursor-pointer flex-[1_1_auto] min-h-[44px] min-w-[min(100%,10.5rem)] max-w-full items-center justify-center gap-2 whitespace-normal rounded-md px-3 py-2 text-center text-sm font-medium leading-snug transition-colors';
 const drawerFooterBtnSecondary = `${drawerFooterBtnClass} bg-fx-100 text-fx-black hover:bg-fx-150`;
 const drawerFooterBtnGhost = `${drawerFooterBtnClass} border border-fx-200 bg-fx-paper text-fx-700 hover:bg-fx-100`;
 
@@ -643,7 +643,8 @@ function AiNotConfiguredModal({ open, onClose }: { open: boolean; onClose: () =>
   );
 }
 
-function CheckDrawerFooter({ check }: { check: CheckResult }) {
+function CheckDrawerFooter({ check, onClose }: { check: CheckResult; onClose: () => void }) {
+  const navigate = useNavigate();
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -694,11 +695,12 @@ function CheckDrawerFooter({ check }: { check: CheckResult }) {
           <button
             type="button"
             className={drawerFooterBtnSecondary}
-            onClick={() =>
-              window.alert(
-                'wireframe: would open Manage checks with this check focused so you can silence it, change intervals, or adjust other options in context.',
-              )
-            }
+            onClick={() => {
+              onClose();
+              navigate(
+                `/advisors/available?edit=${encodeURIComponent(check.catalogCheckId)}`,
+              );
+            }}
           >
             Manage this check
           </button>
@@ -791,7 +793,7 @@ function CheckDrawerContent({ check, onClose }: { check: CheckResult; onClose: (
         </div>
       </div>
 
-      <CheckDrawerFooter check={check} />
+      <CheckDrawerFooter check={check} onClose={onClose} />
     </div>
   );
 }
