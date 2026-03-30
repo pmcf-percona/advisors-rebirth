@@ -133,7 +133,7 @@ export function Home() {
         Home dashboard
       </h1>
 
-      <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2">
         {/* ── Advisors Widget ───────────────────────────────────── */}
         <div className="rounded-lg border border-fx-200 bg-fx-50 p-5 shadow-sm col-span-1 sm:col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
