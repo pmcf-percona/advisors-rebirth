@@ -29,19 +29,21 @@ export interface CheckResult {
   catalogCheckId: string;
 }
 
-/** wireframe: whether the editor treats payload as YAML check definition vs PromQL */
-export type CheckConfigurationKind = 'yaml' | 'promql';
+/** wireframe: editor language — Starlark check body (Python-like highlighting in UI) */
+export type CheckConfigurationKind = 'starlark';
 
 export interface AvailableCheck {
   id: string;
   name: string;
+  /** wireframe: short one-liner for the v2 `summary` field */
+  summary: string;
   description: string;
   databaseType: DatabaseType;
   category: string;
   enabled: boolean;
   interval: string;
   advisor: string;
-  /** wireframe: editable check definition (YAML or PromQL) */
+  /** wireframe: editable Starlark check implementation */
   configuration: string;
   configurationKind: CheckConfigurationKind;
   /** wireframe: factory default for “Revert to default” in editor */
@@ -171,193 +173,188 @@ export const failedChecks: CheckResult[] = [
 
 // ── Available checks catalogue ────────────────────────────────────────────
 
-const cfg001 = `# wireframe — CPU utilization (YAML)
-check:
-  id: cpu_utilization_sustained
-  title: CPU Utilization Exceeds Threshold
-threshold:
-  metric: host_cpu_percent
-  operator: gt
-  value: 85
-window:
-  duration_seconds: 300
-  min_samples: 12
-targets:
-  include_tags: [env:production, role:primary]
-notifications:
-  severity: warning
+const cfg001 = `def check_cpu(metrics):
+    """wireframe — sustained CPU over threshold (Starlark)"""
+    pct = metrics.get("host_cpu_percent", 0)
+    window_ok = metrics.get("cpu_window_samples", 0) >= 12
+    if pct > 85 and window_ok:
+        return fail("CPU " + str(pct) + "% exceeds 85% in 300s window")
+    return ok()
 `;
 
-const cfg002 = `# wireframe — index hints (YAML)
-check:
-  id: mongo_collscan_ratio
-  title: Missing Index Detection
-query:
-  source: advisor_slow_queries
-  condition:
-    docs_examined_to_returned_ratio: gt 1000
-schedule:
-  align_to: wall_clock
-window_minutes: 15
+const cfg002 = `def check_collscan(metrics):
+    """wireframe — MongoDB COLLSCAN / missing index hints (Starlark)"""
+    ratio = metrics.get("docs_examined_to_returned_ratio", 0)
+    if ratio > 1000:
+        return fail("collscan ratio " + str(ratio) + " on hot collection")
+    return ok()
 `;
 
-const cfg003 = `# wireframe — autovacuum (YAML)
-check:
-  id: pg_autovacuum_lag
-  title: Autovacuum Health
-rules:
-  - table_bloat_estimate_mb: gt 512
-  - last_autovacuum_age_hours: gt 24
-scope:
-  schemas: [public, analytics]
-ignore_tables: [staging_tmp_*]
+const cfg003 = `def check_autovacuum(metrics):
+    """wireframe — autovacuum / bloat (Starlark)"""
+    bloat = metrics.get("table_bloat_estimate_mb", 0)
+    age_h = metrics.get("last_vacuum_age_hours", 0)
+    dead = metrics.get("dead_tuples", 0)
+    if bloat > 512 or age_h > 24:
+        return fail("bloat_mb=" + str(bloat) + " vacuum_age_h=" + str(age_h) + " dead=" + str(dead))
+    return ok()
 `;
 
-const cfg004 = `(
-  mysql_global_status_threads_connected
-  /
-  mysql_global_variables_max_connections
-) > 0.85`;
-
-const cfg005 = `# wireframe — replication (YAML)
-check:
-  id: pg_replica_lag_bytes
-  title: Replication Lag
-threshold:
-  lag_bytes: gt 33554432
-  lag_seconds: gt 120
-replicas:
-  match_label: replica_of=primary-prod-01
+const cfg004 = `def check_connection_pool(metrics):
+    """wireframe — MySQL connections vs max (Starlark)"""
+    used = metrics.get("threads_connected", 0)
+    cap = metrics.get("max_connections", 1)
+    ratio = float(used) / float(cap)
+    if ratio > 0.85:
+        return fail("pool " + str(used) + "/" + str(cap) + " (" + str(int(ratio * 100)) + "%)")
+    return ok()
 `;
 
-const cfg006 = `predict_linear(
-  mysql_global_status_bytes_received[1h],
-  7 * 24 * 3600
-) + mysql_global_status_bytes_sent offset 1w > mysql_slave_status_slave_sql_running`;
-
-const cfg007 = `# wireframe — slow ops (YAML)
-check:
-  id: mongo_slow_operation_ms
-  title: Slow Query Detection
-threshold_ms: 500
-aggregation:
-  op_types: [find, aggregate, getmore]
-exclude_ns: [config.*, local.*]
+const cfg005 = `def check_replication_lag(metrics):
+    """wireframe — replica lag bytes / seconds (Starlark)"""
+    lag_b = metrics.get("replication_lag_bytes", 0)
+    lag_s = metrics.get("replication_lag_seconds", 0)
+    if lag_b > 33554432 or lag_s > 120:
+        return fail("lag_bytes=" + str(lag_b) + " lag_s=" + str(lag_s))
+    return ok()
 `;
 
-const cfg008 = `# wireframe — binlog retention (YAML)
-check:
-  id: mysql_binlog_retention_hours
-  title: Binary Log Retention
-expect:
-  min_retention_hours: 24
-  max_disk_usage_percent: 15
-paths:
-  - /var/lib/mysql/binlog
+const cfg006 = `def check_disk_forecast(metrics):
+    """wireframe — linear trend on recv bytes (Starlark)"""
+    slope = metrics.get("bytes_received_slope_1h", 0)
+    horizon = 7 * 24 * 3600
+    if slope * horizon > metrics.get("disk_headroom_bytes", 1 << 62):
+        return fail("projected fill within 7d at current slope")
+    return ok()
+`;
+
+const cfg007 = `def check_slow_ops(metrics):
+    """wireframe — slow Mongo operations (Starlark)"""
+    p99_ms = metrics.get("slow_op_p99_ms", 0)
+    if p99_ms > 500:
+        return fail("p99 slow op " + str(p99_ms) + "ms")
+    return ok()
+`;
+
+const cfg008 = `def check_binlog_retention(metrics):
+    """wireframe — binlog hours / disk cap (Starlark)"""
+    hours = metrics.get("binlog_retention_hours", 0)
+    pct = metrics.get("binlog_disk_percent", 0)
+    if hours < 24 or pct > 15:
+        return fail("retention_h=" + str(hours) + " disk_pct=" + str(pct))
+    return ok()
 `;
 
 export const availableChecks: AvailableCheck[] = [
   {
     id: 'avchk-001',
     name: 'CPU Utilization Exceeds Threshold',
+    summary: 'Sustained CPU over threshold',
     description: 'Alerts when CPU usage stays above a configurable threshold for a sustained period.',
     databaseType: 'postgresql',
     category: 'Performance',
     enabled: true,
     interval: '60s',
     advisor: 'Performance Advisor',
-    configurationKind: 'yaml',
+    configurationKind: 'starlark',
     configuration: cfg001,
     defaultConfiguration: cfg001,
   },
   {
     id: 'avchk-002',
     name: 'Missing Index Detection',
+    summary: 'Detect missing indexes via slow-query logs',
     description: 'Scans slow-query logs for collection scans that could be resolved by an index.',
     databaseType: 'mongodb',
     category: 'Schema',
     enabled: true,
     interval: '300s',
     advisor: 'Schema Advisor',
-    configurationKind: 'yaml',
+    configurationKind: 'starlark',
     configuration: cfg002,
     defaultConfiguration: cfg002,
   },
   {
     id: 'avchk-003',
     name: 'Autovacuum Health',
+    summary: 'Autovacuum running within expected intervals',
     description: 'Verifies autovacuum is running within expected intervals for all tracked tables.',
     databaseType: 'postgresql',
     category: 'Maintenance',
     enabled: true,
     interval: '3600s',
     advisor: 'Maintenance Advisor',
-    configurationKind: 'yaml',
+    configurationKind: 'starlark',
     configuration: cfg003,
     defaultConfiguration: cfg003,
   },
   {
     id: 'avchk-004',
     name: 'Connection Pool Saturation',
+    summary: 'Connection count nearing max_connections',
     description: 'Monitors active connections against max_connections and alerts before exhaustion.',
     databaseType: 'mysql',
     category: 'Connectivity',
     enabled: true,
     interval: '30s',
     advisor: 'Connectivity Advisor',
-    configurationKind: 'promql',
+    configurationKind: 'starlark',
     configuration: cfg004,
     defaultConfiguration: cfg004,
   },
   {
     id: 'avchk-005',
     name: 'Replication Lag',
+    summary: 'Replica lag exceeds threshold',
     description: 'Checks replica lag and alerts when it exceeds the configured threshold.',
     databaseType: 'postgresql',
     category: 'Replication',
     enabled: false,
     interval: '60s',
     advisor: 'Replication Advisor',
-    configurationKind: 'yaml',
+    configurationKind: 'starlark',
     configuration: cfg005,
     defaultConfiguration: cfg005,
   },
   {
     id: 'avchk-006',
     name: 'Disk Space Forecast',
+    summary: 'Projected disk fill within 7 days',
     description: 'Projects disk usage trend and warns when storage will be exhausted within 7 days.',
     databaseType: 'mysql',
     category: 'Resources',
     enabled: false,
     interval: '3600s',
     advisor: 'Resource Advisor',
-    configurationKind: 'promql',
+    configurationKind: 'starlark',
     configuration: cfg006,
     defaultConfiguration: cfg006,
   },
   {
     id: 'avchk-007',
     name: 'Slow Query Detection',
+    summary: 'Queries exceed slow-query threshold',
     description: 'Flags queries exceeding the slow-query threshold configured per instance.',
     databaseType: 'mongodb',
     category: 'Performance',
     enabled: false,
     interval: '120s',
     advisor: 'Performance Advisor',
-    configurationKind: 'yaml',
+    configurationKind: 'starlark',
     configuration: cfg007,
     defaultConfiguration: cfg007,
   },
   {
     id: 'avchk-008',
     name: 'Binary Log Retention',
+    summary: 'Binlog retention within configured window',
     description: 'Ensures binary logs are rotated within the configured retention window.',
     databaseType: 'mysql',
     category: 'Maintenance',
     enabled: false,
     interval: '86400s',
     advisor: 'Maintenance Advisor',
-    configurationKind: 'yaml',
+    configurationKind: 'starlark',
     configuration: cfg008,
     defaultConfiguration: cfg008,
   },

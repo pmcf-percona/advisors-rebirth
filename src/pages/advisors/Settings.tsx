@@ -38,7 +38,7 @@ export function Settings() {
 
 function BYOKPanel() {
   return (
-    <div className="max-w-lg rounded-lg border border-fx-200 bg-fx-50 p-6 shadow-sm">
+    <div className="max-w-lg rounded-lg border border-fx-200 bg-fx-50 p-6">
       <h2 className="text-sm font-semibold text-fx-black">Bring Your Own Key — AI Provider</h2>
       <p className="mt-1 text-xs text-fx-500">
         Connect an OpenAI-compatible API to enable Advanced Explanation on check results.

@@ -608,25 +608,37 @@ export function AvailableChecks() {
         ) : (
           <div className="mt-6 overflow-hidden rounded-lg border border-fx-200 pf-inset-1">
             <div className="overflow-x-auto overscroll-x-contain">
-              <table className="w-full min-w-max text-sm text-left">
+              {/*
+                Column widths: `table-fixed` + colgroup. Adjust Tailwind width classes here
+                (percentages should roughly add up to 100% before the actions column).
+              */}
+              <table className="w-full min-w-[720px] table-fixed text-sm text-left">
+                <colgroup>
+                  <col className="w-[auto]" />
+                  <col className="w-32" />
+                  <col className="w-32" />
+                  <col className="w-20" />
+                  <col className="w-16" />
+                  <col className="w-10" />
+                </colgroup>
                 <thead>
                   <tr className="border-b border-fx-200 bg-fx-100/70">
-                    <th className="px-4 py-3 font-medium text-fx-600 text-xs uppercase tracking-wide">
+                    <th className="px-4 py-2 font-medium text-fx-600 text-[14px] uppercase tracking-wide">
                       Check
                     </th>
-                    <th className="px-4 py-3 font-medium text-fx-600 text-xs uppercase tracking-wide">
+                    <th className="px-3 py-2 font-medium text-fx-600 text-[14px] uppercase tracking-wide">
                       Database
                     </th>
-                    <th className="px-4 py-3 font-medium text-fx-600 text-xs uppercase tracking-wide">
+                    <th className="px-3 py-2 font-medium text-fx-600 text-[14px] uppercase tracking-wide">
                       Category
                     </th>
-                    <th className="px-4 py-3 font-medium text-fx-600 text-xs uppercase tracking-wide">
+                    <th className="px-3 py-2 font-medium text-fx-600 text-[14px] uppercase tracking-wide">
                       Interval
                     </th>
-                    <th className="px-4 py-3 font-medium text-fx-600 text-xs uppercase tracking-wide text-center">
+                    <th className="px-3 py-2 font-medium text-fx-600 text-[14px] uppercase tracking-wide text-center">
                       Enabled
                     </th>
-                    <th className="px-4 py-3 w-12 font-medium text-fx-600 text-xs uppercase tracking-wide text-right">
+                    <th className="px-3 py-2 font-medium text-fx-600 text-xs uppercase tracking-wide text-right">
                       {/* actions */}
                     </th>
                   </tr>
@@ -687,22 +699,26 @@ function CheckRow({
 }) {
   return (
     <tr className="hover:bg-fx-100/40 transition-colors">
-      <td className="px-4 py-3">
-        <p className="font-medium text-fx-black">{check.name}</p>
-        <p className="mt-0.5 max-w-md truncate text-xs text-fx-500">{check.description}</p>
+      <td className="min-w-0 px-3 py-2">
+        <p className="truncate font-medium text-fx-black">{check.name}</p>
+        <p className="mt-0.5 truncate text-xs text-fx-500">{check.description}</p>
       </td>
-      <td className="px-4 py-3">
-        <span className="inline-flex items-center rounded border border-fx-200 bg-fx-100 px-2 py-0.5 font-mono text-xs text-fx-700">
+      <td className="px-3 py-2">
+        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-fx-200/50 text-fx-700">
           {dbLabel[check.databaseType]}
         </span>
       </td>
-      <td className="px-4 py-3 text-fx-600">{check.category}</td>
-      <td className="px-4 py-3 font-mono text-xs text-fx-600">{check.interval}</td>
-      <td className="px-4 py-3 text-center">
+      <td className="px-3 py-2">
+        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-fx-200/50 text-fx-700">
+          {check.category}
+        </span>
+      </td>
+      <td className="px-3 py-2 text-xs text-fx-600">{check.interval}</td>
+      <td className="px-3 py-2 text-center">
         <button
           type="button"
           onClick={() => onToggle(check.id)}
-          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+          className={`relative inline-flex h-5 w-8 items-center rounded-full transition-colors ${
             check.enabled ? 'bg-fx-green' : 'bg-fx-300'
           }`}
           aria-label={`${check.enabled ? 'Disable' : 'Enable'} ${check.name}`}

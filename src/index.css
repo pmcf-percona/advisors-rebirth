@@ -190,8 +190,86 @@ aside::after {
   pointer-events: none;
 }
 
+.sketch-border-left {
+  position: relative;
+}
+
+.sketch-border-left::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  border-left: 2px solid var(--color-border);
+  filter: url(#sketchy);
+  pointer-events: none;
+}
+
 /* Custom overrides stuff */
 
 .pf-inset-1::before {
   inset: 1px !important;
+}
+
+/* Starlark studio — Prism tokens (Flexoki-aligned, wireframe) */
+.studio-prism-light pre,
+.studio-prism-light code {
+  color: var(--color-fx-black);
+}
+.studio-prism-light .token.comment,
+.studio-prism-light .token.prolog,
+.studio-prism-light .token.doctype,
+.studio-prism-light .token.cdata {
+  color: var(--color-fx-500);
+}
+.studio-prism-light .token.string,
+.studio-prism-light .token.attr-value {
+  color: var(--color-fx-cyan);
+}
+.studio-prism-light .token.number,
+.studio-prism-light .token.boolean {
+  color: var(--color-fx-purple);
+}
+.studio-prism-light .token.keyword,
+.studio-prism-light .token.operator {
+  color: var(--color-fx-magenta);
+}
+.studio-prism-light .token.function,
+.studio-prism-light .token.class-name {
+  color: var(--color-fx-blue);
+}
+
+.studio-prism-dark pre,
+.studio-prism-dark code {
+  color: var(--color-fx-100);
+}
+.studio-prism-dark .token.comment,
+.studio-prism-dark .token.prolog,
+.studio-prism-dark .token.doctype,
+.studio-prism-dark .token.cdata {
+  color: var(--color-fx-500);
+}
+.studio-prism-dark .token.string,
+.studio-prism-dark .token.attr-value {
+  color: var(--color-fx-cyan-muted);
+}
+.studio-prism-dark .token.number,
+.studio-prism-dark .token.boolean {
+  color: var(--color-fx-purple-muted);
+}
+.studio-prism-dark .token.keyword,
+.studio-prism-dark .token.operator {
+  color: var(--color-fx-magenta-muted);
+}
+.studio-prism-dark .token.function,
+.studio-prism-dark .token.class-name {
+  color: var(--color-fx-blue-muted);
+}
+
+.studio-editor-textarea-light {
+  caret-color: var(--color-fx-black) !important;
+}
+.studio-editor-textarea-dark {
+  caret-color: var(--color-fx-100) !important;
 }
